@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart } from 'lucide-react';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
@@ -151,8 +151,8 @@ const Lobby = () => {
             </Button>
             {isAdmin && (
               <Button variant="outline" onClick={() => navigate('/admin')}>
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Portal
               </Button>
             )}
             <Button variant="outline" onClick={signOut}>
