@@ -23,12 +23,16 @@ const Store = () => {
 
   useEffect(() => {
     const success = searchParams.get('success');
-    const credits = searchParams.get('credits');
     const cancelled = searchParams.get('cancelled');
     const failed = searchParams.get('failed');
 
-    if (success && credits) {
-      handlePaymentSuccess(parseInt(credits));
+    if (success) {
+      // Credits will be added server-side via Yoco webhook
+      refreshProfile();
+      toast({
+        title: "Payment Processing",
+        description: "Your payment is being processed. Credits will be added shortly.",
+      });
       navigate('/store', { replace: true });
     } else if (cancelled) {
       toast({
@@ -44,32 +48,7 @@ const Store = () => {
       });
       navigate('/store', { replace: true });
     }
-  }, [searchParams]);
-
-  const handlePaymentSuccess = async (credits: number) => {
-    try {
-      // Update user credits
-      const { error } = await supabase
-        .from('profiles')
-        .update({ credits: (profile?.credits || 0) + credits })
-        .eq('id', profile?.id);
-
-      if (error) throw error;
-
-      await refreshProfile();
-
-      toast({
-        title: "Purchase Successful!",
-        description: `${credits} credits have been added to your account.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to add credits. Please contact support.",
-        variant: "destructive",
-      });
-    }
-  };
+  }, [searchParams, refreshProfile, toast, navigate]);
 
   const handlePurchase = async (pkg: typeof creditPackages[0]) => {
     setLoading(pkg.id);
