@@ -51,19 +51,28 @@ const Lobby = () => {
   };
 
   const createGame = async () => {
-    if (!profile) return;
-    
-    if (profile.credits < stakeAmount) {
-      toast({
-        title: "Insufficient credits",
-        description: "You don't have enough credits for this stake.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!profile || !user) return;
 
     setLoading(true);
     try {
+      // Atomically deduct credits before creating game
+      const { data: deducted, error: deductError } = await supabase.rpc('deduct_stake', {
+        p_user_id: user.id,
+        p_amount: stakeAmount
+      });
+
+      if (deductError) throw deductError;
+
+      if (!deducted) {
+        toast({
+          title: "Insufficient credits",
+          description: "You don't have enough credits for this stake.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Credits deducted successfully, now create game
       const { data: game, error } = await supabase
         .from('games')
         .insert({
@@ -79,13 +88,8 @@ const Lobby = () => {
         .from('game_participants')
         .insert({
           game_id: game.id,
-          user_id: user!.id,
+          user_id: user.id,
         });
-
-      await supabase
-        .from('profiles')
-        .update({ credits: profile.credits - stakeAmount })
-        .eq('id', user!.id);
 
       await refreshProfile();
       
@@ -102,29 +106,33 @@ const Lobby = () => {
   };
 
   const joinGame = async (gameId: string, stakeAmount: number) => {
-    if (!profile) return;
-    
-    if (profile.credits < stakeAmount) {
-      toast({
-        title: "Insufficient credits",
-        description: "You don't have enough credits to join this game.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!profile || !user) return;
 
     try {
+      // Atomically deduct credits before joining game
+      const { data: deducted, error: deductError } = await supabase.rpc('deduct_stake', {
+        p_user_id: user.id,
+        p_amount: stakeAmount
+      });
+
+      if (deductError) throw deductError;
+
+      if (!deducted) {
+        toast({
+          title: "Insufficient credits",
+          description: "You don't have enough credits to join this game.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Credits deducted successfully, now join game
       await supabase
         .from('game_participants')
         .insert({
           game_id: gameId,
-          user_id: user!.id,
+          user_id: user.id,
         });
-
-      await supabase
-        .from('profiles')
-        .update({ credits: profile.credits - stakeAmount })
-        .eq('id', user!.id);
 
       await refreshProfile();
       navigate(`/game/${gameId}`);

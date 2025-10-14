@@ -289,6 +289,10 @@ export type Database = {
         Args: { p_game_id: string; p_winner_id: string }
         Returns: undefined
       }
+      deduct_stake: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
