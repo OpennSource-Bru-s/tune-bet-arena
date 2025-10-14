@@ -136,61 +136,20 @@ const Game = () => {
         ).user_id;
       }
 
-      await supabase
-        .from('games')
-        .update({
-          status: 'completed',
-          winner_id: winnerId,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', gameId);
+      // Use secure server-side function for credit distribution and game completion
+      const { error: completionError } = await supabase.rpc('complete_game', {
+        p_game_id: gameId,
+        p_winner_id: winnerId
+      });
 
-      if (winnerId) {
-        const winAmount = game.stake_amount * 2;
-        const { data: winner } = await supabase
-          .from('profiles')
-          .select('credits, total_wins, total_games')
-          .eq('id', winnerId)
-          .single();
-
-        if (winner) {
-          await supabase
-            .from('profiles')
-            .update({
-              credits: winner.credits + winAmount,
-              total_wins: winner.total_wins + 1,
-              total_games: winner.total_games + 1,
-            })
-            .eq('id', winnerId);
-
-          await supabase
-            .from('transactions')
-            .insert({
-              user_id: winnerId,
-              amount: winAmount,
-              type: 'win',
-              game_id: gameId,
-              description: `Won ${winAmount} credits`,
-            });
-        }
-
-        const loserId = participants.find(p => p.user_id !== winnerId)?.user_id;
-        if (loserId) {
-          const { data: loser } = await supabase
-            .from('profiles')
-            .select('total_games')
-            .eq('id', loserId)
-            .single();
-
-          if (loser) {
-            await supabase
-              .from('profiles')
-              .update({
-                total_games: loser.total_games + 1,
-              })
-              .eq('id', loserId);
-          }
-        }
+      if (completionError) {
+        console.error('Error completing game:', completionError);
+        toast({
+          title: "Error",
+          description: "Failed to complete the game. Please contact support.",
+          variant: "destructive"
+        });
+        return;
       }
     }
   };
