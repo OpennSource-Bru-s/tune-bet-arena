@@ -7,6 +7,30 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Zap } from 'lucide-react';
+import { z } from 'zod';
+
+const SignUpSchema = z.object({
+  email: z.string()
+    .trim()
+    .email('Invalid email address')
+    .max(255, 'Email too long'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password too long')
+    .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+    .regex(/[a-z]/, 'Password must contain a lowercase letter')
+    .regex(/[0-9]/, 'Password must contain a number'),
+  username: z.string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must be under 20 characters')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+});
+
+const SignInSchema = z.object({
+  email: z.string().trim().email('Invalid email'),
+  password: z.string().min(1, 'Password required')
+});
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -31,9 +55,10 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        const validated = SignInSchema.parse({ email, password });
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: validated.email,
+          password: validated.password
         });
         
         if (error) throw error;
@@ -44,13 +69,14 @@ const Auth = () => {
         });
         navigate('/');
       } else {
+        const validated = SignUpSchema.parse({ email, password, username });
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: validated.email,
+          password: validated.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
-              username,
+              username: validated.username,
             }
           }
         });
@@ -64,11 +90,19 @@ const Auth = () => {
         navigate('/');
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
