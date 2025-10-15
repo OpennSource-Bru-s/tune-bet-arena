@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,10 +27,59 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    const { amount, credits } = await req.json();
+    // Define validation schema
+    const CheckoutSchema = z.object({
+      amount: z.number()
+        .positive('Amount must be positive')
+        .min(9.99, 'Minimum purchase is R9.99')
+        .max(10000, 'Maximum purchase is R10,000')
+        .finite('Invalid amount'),
+      credits: z.number()
+        .int('Credits must be an integer')
+        .positive('Credits must be positive')
+        .min(100, 'Minimum 100 credits')
+        .max(100000, 'Maximum 100,000 credits')
+    });
 
-    if (!amount || !credits) {
-      throw new Error("Amount and credits are required");
+    // Parse and validate request body
+    const body = await req.json();
+    const validationResult = CheckoutSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    const { amount, credits } = validationResult.data;
+
+    // Validate against allowed packages
+    const validPackages = [
+      { amount: 9.99, credits: 100 },
+      { amount: 39.99, credits: 500 },
+      { amount: 69.99, credits: 1000 },
+      { amount: 249.99, credits: 5000 }
+    ];
+
+    const isValidPackage = validPackages.some(pkg => 
+      pkg.amount === amount && pkg.credits === credits
+    );
+
+    if (!isValidPackage) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid package configuration' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
 
     const yocoSecretKey = Deno.env.get("YOCO_SECRET_KEY");
