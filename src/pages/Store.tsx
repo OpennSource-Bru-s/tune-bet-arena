@@ -4,19 +4,53 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Coins, Sparkles } from 'lucide-react';
 
+type PaymentMethod = 'yoco' | 'zapper';
+
 const creditPackages = [
-  { amount: 100, price: 9.99, id: 'pkg_100credits' },
-  { amount: 500, price: 39.99, id: 'pkg_500credits', popular: true },
-  { amount: 1000, price: 69.99, id: 'pkg_1000credits' },
-  { amount: 5000, price: 249.99, id: 'pkg_5000credits' },
+  { 
+    amount: 100, 
+    price: 9.99, 
+    id: 'pkg_100credits',
+    paymentLinks: {
+      yoco: 'https://pay.yoco.com/r/mRAe8r',
+      zapper: '' // Add Zapper link when available
+    }
+  },
+  { 
+    amount: 500, 
+    price: 39.99, 
+    id: 'pkg_500credits', 
+    popular: true,
+    paymentLinks: {
+      yoco: 'https://pay.yoco.com/r/mRAe8r',
+      zapper: ''
+    }
+  },
+  { 
+    amount: 1000, 
+    price: 69.99, 
+    id: 'pkg_1000credits',
+    paymentLinks: {
+      yoco: 'https://pay.yoco.com/r/mRAe8r',
+      zapper: ''
+    }
+  },
+  { 
+    amount: 5000, 
+    price: 249.99, 
+    id: 'pkg_5000credits',
+    paymentLinks: {
+      yoco: 'https://pay.yoco.com/r/mRAe8r',
+      zapper: ''
+    }
+  },
 ];
 
 const Store = () => {
   const { profile, refreshProfile } = useAuth();
-  const [loading, setLoading] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('yoco');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -50,31 +84,20 @@ const Store = () => {
     }
   }, [searchParams, refreshProfile, toast, navigate]);
 
-  const handlePurchase = async (pkg: typeof creditPackages[0]) => {
-    setLoading(pkg.id);
+  const handlePurchase = (pkg: typeof creditPackages[0]) => {
+    const paymentLink = pkg.paymentLinks[paymentMethod];
     
-    try {
-      const { data, error } = await supabase.functions.invoke('create-yoco-checkout', {
-        body: { 
-          amount: pkg.price,
-          credits: pkg.amount,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      }
-    } catch (error: any) {
+    if (!paymentLink) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create checkout session",
+        title: "Payment Unavailable",
+        description: `${paymentMethod === 'yoco' ? 'Yoco' : 'Zapper'} payment link not configured for this package.`,
         variant: "destructive",
       });
-    } finally {
-      setLoading(null);
+      return;
     }
+
+    // Redirect to payment link
+    window.location.href = paymentLink;
   };
 
   return (
@@ -103,6 +126,28 @@ const Store = () => {
           </CardHeader>
         </Card>
 
+        <Card className="bg-card border-primary/20">
+          <CardHeader>
+            <CardTitle>Select Payment Method</CardTitle>
+          </CardHeader>
+          <CardContent className="flex gap-4">
+            <Button
+              variant={paymentMethod === 'yoco' ? 'default' : 'outline'}
+              onClick={() => setPaymentMethod('yoco')}
+              className="flex-1"
+            >
+              Yoco Payment
+            </Button>
+            <Button
+              variant={paymentMethod === 'zapper' ? 'default' : 'outline'}
+              onClick={() => setPaymentMethod('zapper')}
+              className="flex-1"
+            >
+              Zapper (Crypto)
+            </Button>
+          </CardContent>
+        </Card>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {creditPackages.map((pkg) => (
             <Card
@@ -127,10 +172,10 @@ const Store = () => {
               <CardContent>
                 <Button
                   onClick={() => handlePurchase(pkg)}
-                  disabled={!!loading}
+                  disabled={!pkg.paymentLinks[paymentMethod]}
                   className="w-full bg-gradient-primary hover:opacity-90"
                 >
-                  {loading === pkg.id ? 'Processing...' : 'Purchase'}
+                  {!pkg.paymentLinks[paymentMethod] ? 'Unavailable' : 'Purchase'}
                 </Button>
               </CardContent>
             </Card>
