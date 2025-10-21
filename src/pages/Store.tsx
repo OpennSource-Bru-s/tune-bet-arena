@@ -3,54 +3,64 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Coins, Sparkles } from 'lucide-react';
 
-type PaymentMethod = 'yoco' | 'zapper';
+type PaymentMethod = 'yoco' | 'crypto';
+
+type CryptoOption = {
+  name: string;
+  symbol: string;
+  paymentLink: string;
+};
+
+const cryptoOptions: CryptoOption[] = [
+  { name: 'Bitcoin', symbol: 'BTC', paymentLink: '' },
+  { name: 'Ethereum', symbol: 'ETH', paymentLink: '' },
+  { name: 'Tether', symbol: 'USDT', paymentLink: '' },
+  { name: 'USD Coin', symbol: 'USDC', paymentLink: '' },
+  { name: 'Binance Coin', symbol: 'BNB', paymentLink: '' },
+  { name: 'Solana', symbol: 'SOL', paymentLink: '' },
+  { name: 'Cardano', symbol: 'ADA', paymentLink: '' },
+  { name: 'Polygon', symbol: 'MATIC', paymentLink: '' },
+  { name: 'Litecoin', symbol: 'LTC', paymentLink: '' },
+  { name: 'Dogecoin', symbol: 'DOGE', paymentLink: '' },
+];
 
 const creditPackages = [
   { 
     amount: 100, 
     price: 9.99, 
     id: 'pkg_100credits',
-    paymentLinks: {
-      yoco: 'https://pay.yoco.com/r/mRAe8r',
-      zapper: '' // Add Zapper link when available
-    }
+    yocoLink: 'https://pay.yoco.com/r/mRAe8r',
   },
   { 
     amount: 500, 
     price: 39.99, 
     id: 'pkg_500credits', 
     popular: true,
-    paymentLinks: {
-      yoco: 'https://pay.yoco.com/r/mRAe8r',
-      zapper: ''
-    }
+    yocoLink: 'https://pay.yoco.com/r/mRAe8r',
   },
   { 
     amount: 1000, 
     price: 69.99, 
     id: 'pkg_1000credits',
-    paymentLinks: {
-      yoco: 'https://pay.yoco.com/r/mRAe8r',
-      zapper: ''
-    }
+    yocoLink: 'https://pay.yoco.com/r/mRAe8r',
   },
   { 
     amount: 5000, 
     price: 249.99, 
     id: 'pkg_5000credits',
-    paymentLinks: {
-      yoco: 'https://pay.yoco.com/r/mRAe8r',
-      zapper: ''
-    }
+    yocoLink: 'https://pay.yoco.com/r/mRAe8r',
   },
 ];
 
 const Store = () => {
   const { profile, refreshProfile } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('yoco');
+  const [showCryptoDialog, setShowCryptoDialog] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<typeof creditPackages[0] | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -85,19 +95,36 @@ const Store = () => {
   }, [searchParams, refreshProfile, toast, navigate]);
 
   const handlePurchase = (pkg: typeof creditPackages[0]) => {
-    const paymentLink = pkg.paymentLinks[paymentMethod];
-    
-    if (!paymentLink) {
+    if (paymentMethod === 'crypto') {
+      setSelectedPackage(pkg);
+      setShowCryptoDialog(true);
+      return;
+    }
+
+    // Yoco payment
+    if (!pkg.yocoLink) {
       toast({
         title: "Payment Unavailable",
-        description: `${paymentMethod === 'yoco' ? 'Yoco' : 'Zapper'} payment link not configured for this package.`,
+        description: "Yoco payment link not configured for this package.",
         variant: "destructive",
       });
       return;
     }
 
-    // Redirect to payment link
-    window.location.href = paymentLink;
+    window.location.href = pkg.yocoLink;
+  };
+
+  const handleCryptoSelect = (crypto: CryptoOption) => {
+    if (!crypto.paymentLink) {
+      toast({
+        title: "Payment Unavailable",
+        description: `${crypto.name} payment link not configured yet.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    window.location.href = crypto.paymentLink;
   };
 
   return (
@@ -139,11 +166,11 @@ const Store = () => {
               Yoco Payment
             </Button>
             <Button
-              variant={paymentMethod === 'zapper' ? 'default' : 'outline'}
-              onClick={() => setPaymentMethod('zapper')}
+              variant={paymentMethod === 'crypto' ? 'default' : 'outline'}
+              onClick={() => setPaymentMethod('crypto')}
               className="flex-1"
             >
-              Zapper (Crypto)
+              Crypto
             </Button>
           </CardContent>
         </Card>
@@ -172,10 +199,9 @@ const Store = () => {
               <CardContent>
                 <Button
                   onClick={() => handlePurchase(pkg)}
-                  disabled={!pkg.paymentLinks[paymentMethod]}
                   className="w-full bg-gradient-primary hover:opacity-90"
                 >
-                  {!pkg.paymentLinks[paymentMethod] ? 'Unavailable' : 'Purchase'}
+                  Purchase
                 </Button>
               </CardContent>
             </Card>
@@ -194,6 +220,30 @@ const Store = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showCryptoDialog} onOpenChange={setShowCryptoDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Cryptocurrency</DialogTitle>
+            <DialogDescription>
+              Choose your preferred cryptocurrency to purchase {selectedPackage?.amount} credits for R{selectedPackage?.price}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            {cryptoOptions.map((crypto) => (
+              <Button
+                key={crypto.symbol}
+                variant="outline"
+                onClick={() => handleCryptoSelect(crypto)}
+                className="h-auto py-4 flex flex-col items-center gap-2 hover:bg-primary/10 hover:border-primary"
+              >
+                <span className="text-lg font-bold">{crypto.symbol}</span>
+                <span className="text-xs text-muted-foreground">{crypto.name}</span>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
