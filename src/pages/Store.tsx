@@ -12,20 +12,20 @@ type PaymentMethod = 'yoco' | 'crypto';
 type CryptoOption = {
   name: string;
   symbol: string;
-  paymentLink: string;
+  walletAddress: string;
 };
 
 const cryptoOptions: CryptoOption[] = [
-  { name: 'Bitcoin', symbol: 'BTC', paymentLink: '' },
-  { name: 'Ethereum', symbol: 'ETH', paymentLink: '' },
-  { name: 'Tether', symbol: 'USDT', paymentLink: '' },
-  { name: 'USD Coin', symbol: 'USDC', paymentLink: '' },
-  { name: 'Binance Coin', symbol: 'BNB', paymentLink: '' },
-  { name: 'Solana', symbol: 'SOL', paymentLink: '' },
-  { name: 'Cardano', symbol: 'ADA', paymentLink: '' },
-  { name: 'Polygon', symbol: 'MATIC', paymentLink: '' },
-  { name: 'Litecoin', symbol: 'LTC', paymentLink: '' },
-  { name: 'Dogecoin', symbol: 'DOGE', paymentLink: '' },
+  { name: 'Bitcoin', symbol: 'BTC', walletAddress: '1KEyEudQkABGBzJmpdNtdMVEuJrDjEsjGx' },
+  { name: 'Ethereum', symbol: 'ETH', walletAddress: '0xd009C5a32d79e455E1D10a9ED1AB2043467d84BA' },
+  { name: 'Binance Coin', symbol: 'BNB', walletAddress: '0xd009C5a32d79e455E1D10a9ED1AB2043467d84BA' },
+  { name: 'Solana', symbol: 'SOL', walletAddress: '3WEcLcPgA7yVMwXyhZWwaoni8Wv1Tt4pPUU5mNphdpEc' },
+  { name: 'Polygon', symbol: 'MATIC', walletAddress: '0xd009C5a32d79e455E1D10a9ED1AB2043467d84BA' },
+  { name: 'Dogecoin', symbol: 'DOGE', walletAddress: 'DPP4nAa43a5YizVNZDNTB7eqnSaX5Bqcvd' },
+  { name: 'Avalanche', symbol: 'AVAX', walletAddress: '0xd009C5a32d79e455E1D10a9ED1AB2043467d84BA' },
+  { name: 'Tron', symbol: 'TRX', walletAddress: 'TUvAoEswzR3s4FaTPzxHKomQGEQHBHESmA' },
+  { name: 'Ripple', symbol: 'XRP', walletAddress: 'rJF7okLZtYvQ8gZj3iHWYDkH6Vb7spEYt6' },
+  { name: 'Monero', symbol: 'XMR', walletAddress: '42qyXW3YjFDdkT8XtYyGmTMEPJSULm3oJRHrJsefttt6MrkdQXrWgg2CKcqm4u5HugZwyrzaJPc1S3oydgkH5yKe4YBVFa9' },
 ];
 
 const creditPackages = [
@@ -115,16 +115,12 @@ const Store = () => {
   };
 
   const handleCryptoSelect = (crypto: CryptoOption) => {
-    if (!crypto.paymentLink) {
-      toast({
-        title: "Payment Unavailable",
-        description: `${crypto.name} payment link not configured yet.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    window.location.href = crypto.paymentLink;
+    navigator.clipboard.writeText(crypto.walletAddress);
+    toast({
+      title: "Wallet Address Copied",
+      description: `${crypto.name} address copied to clipboard. Send R${selectedPackage?.price} worth of ${crypto.symbol} to complete your purchase.`,
+    });
+    setShowCryptoDialog(false);
   };
 
   return (
