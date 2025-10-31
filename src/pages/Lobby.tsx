@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield } from 'lucide-react';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
@@ -153,6 +153,10 @@ const Lobby = () => {
             Lyric Battle
           </h1>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/dashboard')}>
+              <Compass className="w-4 h-4 mr-2" />
+              Discover
+            </Button>
             <Button variant="outline" onClick={() => navigate('/store')}>
               <ShoppingCart className="w-4 h-4 mr-2" />
               Store
