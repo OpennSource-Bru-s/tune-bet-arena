@@ -174,6 +174,7 @@ export type Database = {
         Row: {
           answer: string
           artist: string
+          audio_url: string | null
           created_at: string
           difficulty: string | null
           id: string
@@ -184,6 +185,7 @@ export type Database = {
         Insert: {
           answer: string
           artist: string
+          audio_url?: string | null
           created_at?: string
           difficulty?: string | null
           id?: string
@@ -194,6 +196,7 @@ export type Database = {
         Update: {
           answer?: string
           artist?: string
+          audio_url?: string | null
           created_at?: string
           difficulty?: string | null
           id?: string
