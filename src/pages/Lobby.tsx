@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
@@ -149,10 +150,72 @@ const Lobby = () => {
     <div className="min-h-screen bg-gradient-hero p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Lyric Battle
-          </h1>
-          <div className="flex gap-2">
+          {/* Mobile Menu */}
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] bg-card border-primary/20">
+                <SheetHeader>
+                  <SheetTitle className="text-left">Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-3 mt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/dashboard')}
+                    className="justify-start"
+                  >
+                    <Compass className="w-4 h-4 mr-2" />
+                    Discover
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/streaming')}
+                    className="justify-start"
+                  >
+                    <Mic2 className="w-4 h-4 mr-2" />
+                    Artists
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/store')}
+                    className="justify-start"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Store
+                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/admin')}
+                      className="justify-start"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Portal
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    onClick={signOut}
+                    className="justify-start"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+            
+            <h1 className="text-2xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Lyric Battle
+            </h1>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex gap-2">
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               <Compass className="w-4 h-4 mr-2" />
               Discover
