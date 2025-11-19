@@ -2,3 +2,6 @@ project_id = "cncrundcnyzntykngrjv"
 
 [functions.yoco-webhook]
 verify_jwt = false
+
+[functions.extract-music-metadata]
+verify_jwt = false

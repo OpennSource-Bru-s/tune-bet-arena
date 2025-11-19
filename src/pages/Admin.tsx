@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Music, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MusicLinkExtractor } from '@/components/MusicLinkExtractor';
 
 const Admin = () => {
   const { isAdmin } = useAuth();
@@ -161,6 +162,15 @@ const Admin = () => {
                 <CardDescription>Add songs for the lyrics guessing game</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <MusicLinkExtractor 
+                  onMetadataExtracted={(metadata) => {
+                    setNewSong({ 
+                      ...newSong, 
+                      title: metadata.title, 
+                      artist: metadata.artist 
+                    });
+                  }}
+                />
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Title</Label>
