@@ -146,6 +146,36 @@ const Lobby = () => {
     }
   };
 
+  const handleClaimFreeCredits = async () => {
+    try {
+      const { data, error } = await supabase.rpc('claim_free_credits');
+      
+      if (error) throw error;
+      
+      const result = data as { success: boolean; message: string; new_balance?: number; next_claim_at?: string };
+      
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: result.message,
+        });
+        await refreshProfile();
+      } else {
+        toast({
+          title: "Unable to Claim",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to claim free credits",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero p-4">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -250,6 +280,18 @@ const Lobby = () => {
                 <CardTitle className="text-3xl">{profile?.credits || 0}</CardTitle>
               </div>
             </CardHeader>
+            {profile?.credits === 0 && (
+              <CardContent className="pt-0">
+                <Button 
+                  onClick={handleClaimFreeCredits}
+                  className="w-full bg-gradient-primary hover:opacity-90"
+                  size="sm"
+                >
+                  <Coins className="w-4 h-4 mr-2" />
+                  Claim 250 Free Credits
+                </Button>
+              </CardContent>
+            )}
           </Card>
 
           <Card className="bg-gradient-card border-primary/20">
