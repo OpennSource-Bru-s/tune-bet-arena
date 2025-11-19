@@ -117,6 +117,7 @@ export type Database = {
           credits: number
           display_name: string | null
           id: string
+          last_free_credit_at: string | null
           total_games: number
           total_wins: number
           updated_at: string
@@ -128,6 +129,7 @@ export type Database = {
           credits?: number
           display_name?: string | null
           id: string
+          last_free_credit_at?: string | null
           total_games?: number
           total_wins?: number
           updated_at?: string
@@ -139,6 +141,7 @@ export type Database = {
           credits?: number
           display_name?: string | null
           id?: string
+          last_free_credit_at?: string | null
           total_games?: number
           total_wins?: number
           updated_at?: string
@@ -288,6 +291,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_free_credits: { Args: never; Returns: Json }
       complete_game: {
         Args: { p_game_id: string; p_winner_id: string }
         Returns: undefined
