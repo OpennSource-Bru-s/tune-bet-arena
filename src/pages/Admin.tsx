@@ -24,6 +24,7 @@ const Admin = () => {
     difficulty: 'medium',
     platform: '',
     original_url: '',
+    icon: '',
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -86,6 +87,7 @@ const Admin = () => {
         difficulty: 'medium',
         platform: '',
         original_url: '',
+        icon: '',
       });
       loadSongs();
     }
@@ -173,7 +175,8 @@ const Admin = () => {
                       title: metadata.title, 
                       artist: metadata.artist,
                       platform: metadata.platform,
-                      original_url: metadata.originalUrl
+                      original_url: metadata.originalUrl,
+                      icon: metadata.icon
                     });
                   }}
                 />

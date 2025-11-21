@@ -20,6 +20,7 @@ interface MusicLinkExtractorProps {
     artist: string;
     platform: string;
     originalUrl: string;
+    icon: string;
   }) => void;
 }
 
@@ -60,7 +61,8 @@ export const MusicLinkExtractor = ({ onMetadataExtracted }: MusicLinkExtractorPr
           title: data.metadata.title,
           artist: data.metadata.artist,
           platform: data.metadata.platform,
-          originalUrl: link
+          originalUrl: link,
+          icon: platformIcons[data.metadata.platform as keyof typeof platformIcons]
         });
         toast({
           title: "Success",

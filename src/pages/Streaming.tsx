@@ -15,6 +15,7 @@ interface Song {
   difficulty: string;
   platform?: 'youtube' | 'spotify' | 'soundcloud' | 'apple' | 'direct';
   original_url?: string | null;
+  icon?: string | null;
 }
 
 const Streaming = () => {
@@ -32,7 +33,7 @@ const Streaming = () => {
     try {
       const { data, error } = await supabase
         .from("songs")
-        .select("id, title, artist, audio_url, difficulty, platform, original_url")
+        .select("id, title, artist, audio_url, difficulty, platform, original_url, icon")
         .eq("is_active", true)
         .order("title");
 
@@ -112,7 +113,10 @@ const Streaming = () => {
               >
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    {song.title}
+                    <div className="flex items-center gap-2">
+                      {song.icon && <span className="text-2xl">{song.icon}</span>}
+                      {song.title}
+                    </div>
                     {currentSong?.id === song.id && (
                       <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                     )}
