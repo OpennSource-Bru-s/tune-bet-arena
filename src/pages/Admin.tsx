@@ -22,6 +22,8 @@ const Admin = () => {
     lyrics_snippet: '',
     answer: '',
     difficulty: 'medium',
+    platform: '',
+    original_url: '',
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,6 +84,8 @@ const Admin = () => {
         lyrics_snippet: '',
         answer: '',
         difficulty: 'medium',
+        platform: '',
+        original_url: '',
       });
       loadSongs();
     }
@@ -167,7 +171,9 @@ const Admin = () => {
                     setNewSong({ 
                       ...newSong, 
                       title: metadata.title, 
-                      artist: metadata.artist 
+                      artist: metadata.artist,
+                      platform: metadata.platform,
+                      original_url: metadata.originalUrl
                     });
                   }}
                 />
