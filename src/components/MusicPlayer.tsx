@@ -3,12 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, X } from "lucide-react";
+import { PlatformPlayer } from "./players/PlatformPlayer";
 
 interface Song {
   id: string;
   title: string;
   artist: string;
   audio_url: string | null;
+  platform?: 'youtube' | 'spotify' | 'soundcloud' | 'apple' | 'direct';
+  original_url?: string | null;
 }
 
 interface MusicPlayerProps {
@@ -103,12 +106,24 @@ const MusicPlayer = ({ song, onNext, onPrevious, onClose }: MusicPlayerProps) =>
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  if (!song.audio_url) return null;
+  const hasPlayableContent = song.audio_url || (song.platform && song.original_url);
+  if (!hasPlayableContent) return null;
 
   return (
     <Card className="fixed bottom-0 left-0 right-0 border-t shadow-lg bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <CardContent className="p-4">
-        <audio ref={audioRef} />
+        {song.platform && song.original_url ? (
+          <div className="mb-4">
+            <PlatformPlayer
+              platform={song.platform}
+              url={song.original_url}
+              onReady={() => console.log('Platform player ready')}
+              onError={(error) => console.error('Platform player error:', error)}
+            />
+          </div>
+        ) : (
+          <audio ref={audioRef} />
+        )}
         
         <div className="flex items-center justify-between mb-4">
           <div className="flex-1">
