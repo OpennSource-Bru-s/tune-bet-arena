@@ -13,6 +13,8 @@ interface Song {
   artist: string;
   audio_url: string | null;
   difficulty: string;
+  platform?: 'youtube' | 'spotify' | 'soundcloud' | 'apple' | 'direct';
+  original_url?: string | null;
 }
 
 const Streaming = () => {
@@ -30,13 +32,18 @@ const Streaming = () => {
     try {
       const { data, error } = await supabase
         .from("songs")
-        .select("id, title, artist, audio_url, difficulty")
+        .select("id, title, artist, audio_url, difficulty, platform, original_url")
         .eq("is_active", true)
-        .not("audio_url", "is", null)
         .order("title");
 
       if (error) throw error;
-      setSongs(data || []);
+      
+      // Filter songs that have either audio_url or (platform + original_url)
+      const streamableSongs = (data || []).filter(
+        song => song.audio_url || (song.platform && song.original_url)
+      ) as Song[];
+      
+      setSongs(streamableSongs);
     } catch (error: any) {
       toast({
         title: "Error loading songs",
