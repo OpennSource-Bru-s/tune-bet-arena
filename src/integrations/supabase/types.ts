@@ -180,6 +180,7 @@ export type Database = {
           audio_url: string | null
           created_at: string
           difficulty: string | null
+          icon: string | null
           id: string
           is_active: boolean | null
           lyrics_snippet: string
@@ -193,6 +194,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           difficulty?: string | null
+          icon?: string | null
           id?: string
           is_active?: boolean | null
           lyrics_snippet: string
@@ -206,6 +208,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string
           difficulty?: string | null
+          icon?: string | null
           id?: string
           is_active?: boolean | null
           lyrics_snippet?: string
