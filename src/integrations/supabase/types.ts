@@ -113,6 +113,51 @@ export type Database = {
           },
         ]
       }
+      game_analytics: {
+        Row: {
+          average_response_time: number | null
+          completion_rate: number | null
+          created_at: string | null
+          game_id: string | null
+          id: string
+          song_id: string | null
+          total_players: number | null
+        }
+        Insert: {
+          average_response_time?: number | null
+          completion_rate?: number | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          song_id?: string | null
+          total_players?: number | null
+        }
+        Update: {
+          average_response_time?: number | null
+          completion_rate?: number | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          song_id?: string | null
+          total_players?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_analytics_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_analytics_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_participants: {
         Row: {
           answer_text: string | null
@@ -154,6 +199,48 @@ export type Database = {
           },
           {
             foreignKeyName: "game_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_replays: {
+        Row: {
+          event_data: Json | null
+          event_type: string
+          game_id: string | null
+          id: string
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type: string
+          game_id?: string | null
+          id?: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string
+          game_id?: string | null
+          id?: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_replays_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_replays_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -368,7 +455,9 @@ export type Database = {
           lyrics_snippet: string
           original_url: string | null
           platform: string | null
+          times_played: number | null
           title: string
+          win_rate: number | null
         }
         Insert: {
           answer: string
@@ -382,7 +471,9 @@ export type Database = {
           lyrics_snippet: string
           original_url?: string | null
           platform?: string | null
+          times_played?: number | null
           title: string
+          win_rate?: number | null
         }
         Update: {
           answer?: string
@@ -396,7 +487,9 @@ export type Database = {
           lyrics_snippet?: string
           original_url?: string | null
           platform?: string | null
+          times_played?: number | null
           title?: string
+          win_rate?: number | null
         }
         Relationships: []
       }
@@ -555,6 +648,59 @@ export type Database = {
           },
         ]
       }
+      user_statistics: {
+        Row: {
+          average_response_time: number | null
+          current_win_streak: number | null
+          fastest_correct_answer: number | null
+          id: string
+          last_played_at: string | null
+          longest_win_streak: number | null
+          total_credits_earned: number | null
+          total_games_played: number | null
+          total_wins: number | null
+          updated_at: string | null
+          user_id: string | null
+          win_rate: number | null
+        }
+        Insert: {
+          average_response_time?: number | null
+          current_win_streak?: number | null
+          fastest_correct_answer?: number | null
+          id?: string
+          last_played_at?: string | null
+          longest_win_streak?: number | null
+          total_credits_earned?: number | null
+          total_games_played?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          win_rate?: number | null
+        }
+        Update: {
+          average_response_time?: number | null
+          current_win_streak?: number | null
+          fastest_correct_answer?: number | null
+          id?: string
+          last_played_at?: string | null
+          longest_win_streak?: number | null
+          total_credits_earned?: number | null
+          total_games_played?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          win_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_statistics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -579,6 +725,14 @@ export type Database = {
       }
       update_elo_ratings: {
         Args: { p_loser_id: string; p_winner_id: string }
+        Returns: undefined
+      }
+      update_song_statistics: {
+        Args: { p_song_id: string; p_was_correct: boolean }
+        Returns: undefined
+      }
+      update_user_statistics: {
+        Args: { p_response_time: number; p_user_id: string; p_won: boolean }
         Returns: undefined
       }
     }
