@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Timer, Users, Trophy } from 'lucide-react';
 import GameChat from '@/components/GameChat';
+import { useGameAnalytics } from '@/hooks/useGameAnalytics';
 
 const Game = () => {
   const { gameId } = useParams();
@@ -17,8 +18,12 @@ const Game = () => {
   const [answer, setAnswer] = useState('');
   const [timeLeft, setTimeLeft] = useState(30);
   const [hasAnswered, setHasAnswered] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { trackGameEvent, updateGameAnalytics, updateUserStats } = useGameAnalytics();
 
   useEffect(() => {
     if (!gameId) return;
@@ -30,12 +35,37 @@ const Game = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'games', filter: `id=eq.${gameId}` }, () => {
         loadGame();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setIsReconnecting(false);
+          reconnectAttempts.current = 0;
+        } else if (status === 'CHANNEL_ERROR') {
+          handleReconnect();
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [gameId]);
+
+  const handleReconnect = async () => {
+    if (reconnectAttempts.current >= maxReconnectAttempts) {
+      toast({
+        title: 'Connection Lost',
+        description: 'Unable to reconnect. Please refresh the page.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsReconnecting(true);
+    reconnectAttempts.current += 1;
+
+    setTimeout(() => {
+      loadGame();
+    }, 2000 * reconnectAttempts.current);
+  };
 
   useEffect(() => {
     if (game?.status === 'in_progress' && timeLeft > 0 && !hasAnswered) {
@@ -47,18 +77,23 @@ const Game = () => {
   }, [timeLeft, game, hasAnswered]);
 
   const loadGame = async () => {
-    const { data: gameData } = await supabase
-      .from('games')
-      .select(`
-        *,
-        songs (*),
-        game_participants (
+    try {
+      if (user && gameId) {
+        await trackGameEvent(gameId, user.id, 'page_load', { timestamp: new Date().toISOString() });
+      }
+
+      const { data: gameData } = await supabase
+        .from('games')
+        .select(`
           *,
-          profiles (username)
-        )
-      `)
-      .eq('id', gameId)
-      .single();
+          songs (*),
+          game_participants (
+            *,
+            profiles (username)
+          )
+        `)
+        .eq('id', gameId)
+        .single();
 
     if (gameData) {
       setGame(gameData);
@@ -73,6 +108,9 @@ const Game = () => {
       if (gameData.status === 'completed') {
         handleGameEnd(gameData);
       }
+    }
+    } catch (error) {
+      console.error('Error loading game:', error);
     }
   };
 
@@ -103,6 +141,12 @@ const Game = () => {
     const participant = game.game_participants.find((p: any) => p.user_id === user?.id);
     const timeTaken = 30 - timeLeft;
     const isCorrect = answer.trim().toLowerCase() === song?.answer.toLowerCase();
+
+    await trackGameEvent(gameId!, user!.id, 'answer_submitted', {
+      answer: answer,
+      is_correct: isCorrect,
+      time_taken: timeTaken,
+    });
 
     await supabase
       .from('game_participants')
@@ -135,6 +179,22 @@ const Game = () => {
         winnerId = correctAnswers.reduce((fastest, current) =>
           current.time_taken < fastest.time_taken ? current : fastest
         ).user_id;
+      }
+
+      // Update analytics before completing game
+      if (song) {
+        await updateGameAnalytics(gameId!, song.id, participants);
+      }
+
+      // Update user statistics
+      for (const participant of participants) {
+        if (participant.time_taken) {
+          await updateUserStats(
+            participant.user_id,
+            participant.user_id === winnerId,
+            participant.time_taken
+          );
+        }
       }
 
       // Use secure server-side function for credit distribution and game completion
@@ -173,7 +233,9 @@ const Game = () => {
   if (!game) {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
-        <p className="text-foreground">Loading game...</p>
+        <p className="text-foreground">
+          {isReconnecting ? 'Reconnecting...' : 'Loading game...'}
+        </p>
       </div>
     );
   }

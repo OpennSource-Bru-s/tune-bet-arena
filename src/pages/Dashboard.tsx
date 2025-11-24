@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Trophy, Music, Target, Award, ArrowLeft, Lock } from 'lucide-react';
+import { Trophy, Music, Target, Award, ArrowLeft, Lock, BarChart3 } from 'lucide-react';
 
 type Song = {
   id: string;
@@ -288,11 +288,21 @@ const Dashboard = () => {
         {/* Challenges */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              <CardTitle>Challenges</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  <CardTitle>Challenges</CardTitle>
+                </div>
+                <CardDescription>Special achievements and milestones</CardDescription>
+              </div>
+              {user && (
+                <Button variant="outline" onClick={() => navigate('/statistics')}>
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Statistics
+                </Button>
+              )}
             </div>
-            <CardDescription>Special achievements and milestones</CardDescription>
           </CardHeader>
           <CardContent>
             {!user ? (
