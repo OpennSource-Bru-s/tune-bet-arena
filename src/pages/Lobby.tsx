@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu } from 'lucide-react';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu, Users } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
@@ -211,6 +211,14 @@ const Lobby = () => {
                   </Button>
                   <Button 
                     variant="outline" 
+                    onClick={() => navigate('/social')}
+                    className="justify-start"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Social
+                  </Button>
+                  <Button 
+                    variant="outline" 
                     onClick={() => navigate('/store')}
                     className="justify-start"
                   >
@@ -253,6 +261,10 @@ const Lobby = () => {
             <Button variant="outline" onClick={() => navigate('/streaming')}>
               <Mic2 className="w-4 h-4 mr-2" />
               Artists
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/social')}>
+              <Users className="w-4 h-4 mr-2" />
+              Social
             </Button>
             <Button variant="outline" onClick={() => navigate('/store')}>
               <ShoppingCart className="w-4 h-4 mr-2" />
