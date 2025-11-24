@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Timer, Users, Trophy } from 'lucide-react';
+import GameChat from '@/components/GameChat';
 
 const Game = () => {
   const { gameId } = useParams();
@@ -226,49 +227,62 @@ const Game = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full bg-card border-primary/20 shadow-glow">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl">Guess the Lyrics!</CardTitle>
-            <div className="flex items-center gap-2 text-accent">
-              <Timer className="w-5 h-5" />
-              <span className="text-2xl font-bold">{timeLeft}s</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Song: {song?.title} by {song?.artist}</p>
-            <div className="p-6 bg-gradient-card border border-primary/20 rounded-lg">
-              <p className="text-lg text-center italic">{song?.lyrics_snippet}</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-hero p-4">
+      <div className="max-w-6xl mx-auto grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card className="bg-card border-primary/20 shadow-glow">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl">Guess the Lyrics!</CardTitle>
+                <div className="flex items-center gap-2 text-accent">
+                  <Timer className="w-5 h-5" />
+                  <span className="text-2xl font-bold">{timeLeft}s</span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Song: {song?.title} by {song?.artist}</p>
+                <div className="p-6 bg-gradient-card border border-primary/20 rounded-lg">
+                  <p className="text-lg text-center italic">{song?.lyrics_snippet}</p>
+                </div>
+              </div>
 
-          {!hasAnswered ? (
-            <div className="space-y-4">
-              <Input
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Type the missing lyrics..."
-                className="text-lg bg-input border-border"
-                onKeyPress={(e) => e.key === 'Enter' && submitAnswer()}
-                autoFocus
-              />
-              <Button 
-                onClick={submitAnswer}
-                className="w-full bg-gradient-primary hover:opacity-90"
-              >
-                Submit Answer
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-lg text-muted-foreground">Answer submitted! Waiting for other player...</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              {!hasAnswered ? (
+                <div className="space-y-4">
+                  <Input
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && submitAnswer()}
+                    placeholder="Type the next line of the lyrics..."
+                    className="text-lg bg-background/50 border-primary/20"
+                  />
+                  <Button 
+                    onClick={submitAnswer} 
+                    className="w-full bg-gradient-primary hover:opacity-90"
+                  >
+                    Submit Answer
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center p-6 bg-secondary/20 rounded-lg">
+                  <p className="text-lg">Waiting for opponent to answer...</p>
+                  <div className="mt-4 flex justify-center items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    <span className="text-sm text-muted-foreground">
+                      {game?.game_participants?.length || 0} players in game
+                    </span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="lg:col-span-1">
+          <GameChat gameId={gameId!} />
+        </div>
+      </div>
     </div>
   );
 };

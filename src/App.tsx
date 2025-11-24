@@ -12,6 +12,7 @@ import Store from "./pages/Store";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 import Streaming from "./pages/Streaming";
+import Social from "./pages/Social";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/streaming" element={<Streaming />} />
+            <Route path="/social" element={<Social />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
