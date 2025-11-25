@@ -10,6 +10,9 @@ interface Profile {
   credits: number;
   total_wins: number;
   total_games: number;
+  referral_code?: string | null;
+  is_premium?: boolean;
+  premium_expires_at?: string | null;
 }
 
 interface AuthContextType {
