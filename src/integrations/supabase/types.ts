@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cosmetic_items: {
+        Row: {
+          animation_data: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          name: string
+          price_credits: number
+          price_premium: boolean | null
+          rarity: Database["public"]["Enums"]["item_rarity"]
+          type: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Insert: {
+          animation_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name: string
+          price_credits: number
+          price_premium?: boolean | null
+          rarity?: Database["public"]["Enums"]["item_rarity"]
+          type: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Update: {
+          animation_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name?: string
+          price_credits?: number
+          price_premium?: boolean | null
+          rarity?: Database["public"]["Enums"]["item_rarity"]
+          type?: Database["public"]["Enums"]["cosmetic_type"]
+        }
+        Relationships: []
+      }
       daily_challenges: {
         Row: {
           bonus_credits: number
@@ -383,8 +425,15 @@ export type Database = {
           credits: number
           display_name: string | null
           elo_rating: number | null
+          equipped_animation: string | null
+          equipped_avatar: string | null
+          equipped_frame: string | null
           id: string
+          is_premium: boolean | null
           last_free_credit_at: string | null
+          premium_expires_at: string | null
+          referral_code: string | null
+          referred_by: string | null
           total_games: number
           total_wins: number
           updated_at: string
@@ -396,8 +445,15 @@ export type Database = {
           credits?: number
           display_name?: string | null
           elo_rating?: number | null
+          equipped_animation?: string | null
+          equipped_avatar?: string | null
+          equipped_frame?: string | null
           id: string
+          is_premium?: boolean | null
           last_free_credit_at?: string | null
+          premium_expires_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           total_games?: number
           total_wins?: number
           updated_at?: string
@@ -409,12 +465,132 @@ export type Database = {
           credits?: number
           display_name?: string | null
           elo_rating?: number | null
+          equipped_animation?: string | null
+          equipped_avatar?: string | null
+          equipped_frame?: string | null
           id?: string
+          is_premium?: boolean | null
           last_free_credit_at?: string | null
+          premium_expires_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           total_games?: number
           total_wins?: number
           updated_at?: string
           username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_equipped_animation_fkey"
+            columns: ["equipped_animation"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_avatar_fkey"
+            columns: ["equipped_avatar"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_equipped_frame_fkey"
+            columns: ["equipped_frame"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string | null
+          id: string
+          referred_id: string
+          referrer_id: string
+          reward_claimed: boolean | null
+          reward_credits: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referred_id: string
+          referrer_id: string
+          reward_claimed?: boolean | null
+          reward_credits?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_claimed?: boolean | null
+          reward_credits?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_passes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          max_level: number | null
+          name: string
+          price_credits: number
+          rewards: Json
+          season_number: number
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          max_level?: number | null
+          name: string
+          price_credits: number
+          rewards: Json
+          season_number: number
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          max_level?: number | null
+          name?: string
+          price_credits?: number
+          rewards?: Json
+          season_number?: number
+          start_date?: string
         }
         Relationships: []
       }
@@ -452,9 +628,13 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean | null
+          is_sponsored: boolean | null
           lyrics_snippet: string
           original_url: string | null
           platform: string | null
+          sponsor_logo_url: string | null
+          sponsor_metadata: Json | null
+          sponsor_name: string | null
           times_played: number | null
           title: string
           win_rate: number | null
@@ -468,9 +648,13 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_sponsored?: boolean | null
           lyrics_snippet: string
           original_url?: string | null
           platform?: string | null
+          sponsor_logo_url?: string | null
+          sponsor_metadata?: Json | null
+          sponsor_name?: string | null
           times_played?: number | null
           title: string
           win_rate?: number | null
@@ -484,12 +668,103 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_sponsored?: boolean | null
           lyrics_snippet?: string
           original_url?: string | null
           platform?: string | null
+          sponsor_logo_url?: string | null
+          sponsor_metadata?: Json | null
+          sponsor_name?: string | null
           times_played?: number | null
           title?: string
           win_rate?: number | null
+        }
+        Relationships: []
+      }
+      tournament_participants: {
+        Row: {
+          id: string
+          joined_at: string | null
+          prize_won: number | null
+          rank: number | null
+          score: number | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          prize_won?: number | null
+          rank?: number | null
+          score?: number | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          prize_won?: number | null
+          rank?: number | null
+          score?: number | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_time: string
+          entry_fee: number
+          id: string
+          max_participants: number | null
+          name: string
+          prize_pool: number
+          rules: Json | null
+          start_time: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          entry_fee: number
+          id?: string
+          max_participants?: number | null
+          name: string
+          prize_pool: number
+          rules?: Json | null
+          start_time: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          entry_fee?: number
+          id?: string
+          max_participants?: number | null
+          name?: string
+          prize_pool?: number
+          rules?: Json | null
+          start_time?: string
+          status?: string | null
         }
         Relationships: []
       }
@@ -577,6 +852,42 @@ export type Database = {
           },
         ]
       }
+      user_cosmetics: {
+        Row: {
+          acquired_at: string | null
+          cosmetic_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string | null
+          cosmetic_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string | null
+          cosmetic_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cosmetics_cosmetic_id_fkey"
+            columns: ["cosmetic_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_cosmetics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_daily_challenges: {
         Row: {
           challenge_id: string
@@ -641,6 +952,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_season_progress: {
+        Row: {
+          created_at: string | null
+          current_level: number | null
+          id: string
+          is_premium: boolean | null
+          purchased_at: string | null
+          season_id: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_level?: number | null
+          id?: string
+          is_premium?: boolean | null
+          purchased_at?: string | null
+          season_id: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_level?: number | null
+          id?: string
+          is_premium?: boolean | null
+          purchased_at?: string | null
+          season_id?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_season_progress_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "season_passes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_season_progress_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -723,6 +1082,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      process_referral_reward: {
+        Args: { p_referred_id: string; p_referrer_id: string }
+        Returns: undefined
+      }
       update_elo_ratings: {
         Args: { p_loser_id: string; p_winner_id: string }
         Returns: undefined
@@ -738,7 +1101,9 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "player"
+      cosmetic_type: "avatar" | "profile_frame" | "victory_animation"
       game_status: "waiting" | "in_progress" | "completed" | "cancelled"
+      item_rarity: "common" | "rare" | "epic" | "legendary"
       transaction_type: "purchase" | "stake" | "win" | "free_credits"
     }
     CompositeTypes: {
@@ -868,7 +1233,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "player"],
+      cosmetic_type: ["avatar", "profile_frame", "victory_animation"],
       game_status: ["waiting", "in_progress", "completed", "cancelled"],
+      item_rarity: ["common", "rare", "epic", "legendary"],
       transaction_type: ["purchase", "stake", "win", "free_credits"],
     },
   },

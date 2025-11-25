@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu, Users } from 'lucide-react';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu, Users, BarChart3, Gift, Crown } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
@@ -265,6 +265,22 @@ const Lobby = () => {
             <Button variant="outline" onClick={() => navigate('/social')}>
               <Users className="w-4 h-4 mr-2" />
               Social
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/tournaments')}>
+              <Trophy className="w-4 h-4 mr-2" />
+              Tournaments
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/statistics')}>
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Stats
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/referrals')}>
+              <Gift className="w-4 h-4 mr-2" />
+              Referrals
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/streaming')}>
+              <Crown className="w-4 h-4 mr-2" />
+              Premium
             </Button>
             <Button variant="outline" onClick={() => navigate('/store')}>
               <ShoppingCart className="w-4 h-4 mr-2" />

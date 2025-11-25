@@ -1,161 +1,138 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Play, Pause, SkipForward, SkipBack } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import MusicPlayer from "@/components/MusicPlayer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check, Crown, Zap, Star, Trophy } from "lucide-react";
+import { toast } from "sonner";
 
-interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  audio_url: string | null;
-  difficulty: string;
-  platform?: 'youtube' | 'spotify' | 'soundcloud' | 'apple' | 'direct';
-  original_url?: string | null;
-  icon?: string | null;
-}
+export default function Streaming() {
+  const { profile } = useAuth();
 
-const Streaming = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const features = [
+    { icon: Zap, title: "Ad-Free Experience", description: "Enjoy uninterrupted gameplay" },
+    { icon: Trophy, title: "Exclusive Tournaments", description: "Access to premium-only tournaments" },
+    { icon: Crown, title: "Priority Matchmaking", description: "Get matched faster with premium players" },
+    { icon: Star, title: "Bonus Credits Monthly", description: "Receive 500 bonus credits each month" },
+  ];
 
-  useEffect(() => {
-    loadStreamableSongs();
-  }, []);
+  const isPremium = profile?.is_premium && profile?.premium_expires_at && new Date(profile.premium_expires_at) > new Date();
 
-  const loadStreamableSongs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("songs")
-        .select("id, title, artist, audio_url, difficulty, platform, original_url, icon")
-        .eq("is_active", true)
-        .order("title");
-
-      if (error) throw error;
-      
-      // Filter songs that have either audio_url or (platform + original_url)
-      const streamableSongs = (data || []).filter(
-        song => song.audio_url || (song.platform && song.original_url)
-      ) as Song[];
-      
-      setSongs(streamableSongs);
-    } catch (error: any) {
-      toast({
-        title: "Error loading songs",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const playSong = (song: Song) => {
-    setCurrentSong(song);
-  };
-
-  const playNext = () => {
-    if (!currentSong || songs.length === 0) return;
-    const currentIndex = songs.findIndex((s) => s.id === currentSong.id);
-    const nextIndex = (currentIndex + 1) % songs.length;
-    setCurrentSong(songs[nextIndex]);
-  };
-
-  const playPrevious = () => {
-    if (!currentSong || songs.length === 0) return;
-    const currentIndex = songs.findIndex((s) => s.id === currentSong.id);
-    const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
-    setCurrentSong(songs[prevIndex]);
+  const handleSubscribe = () => {
+    toast.info("Premium subscriptions coming soon! Currently in development.");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 pb-32">
-      <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
-
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Music Streaming</h1>
-          <p className="text-muted-foreground">Stream full songs from our collection</p>
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading songs...</p>
-          </div>
-        ) : songs.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">No streamable songs available yet.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {songs.map((song) => (
-              <Card
-                key={song.id}
-                className={`cursor-pointer transition-all hover:shadow-lg ${
-                  currentSong?.id === song.id ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => playSong(song)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {song.icon && <span className="text-2xl">{song.icon}</span>}
-                      {song.title}
-                    </div>
-                    {currentSong?.id === song.id && (
-                      <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                    )}
-                  </CardTitle>
-                  <CardDescription>{song.artist}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground capitalize">
-                      {song.difficulty || "medium"}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant={currentSong?.id === song.id ? "default" : "secondary"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        playSong(song);
-                      }}
-                    >
-                      <Play className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+    <div className="container mx-auto p-4 md:p-8 space-y-8">
+      <div className="text-center space-y-2">
+        <h1 className="text-4xl font-bold">Premium Membership</h1>
+        <p className="text-muted-foreground">
+          Unlock exclusive features and take your gameplay to the next level
+        </p>
       </div>
 
-      {currentSong && (
-        <MusicPlayer
-          song={currentSong}
-          onNext={playNext}
-          onPrevious={playPrevious}
-          onClose={() => setCurrentSong(null)}
-        />
+      {isPremium && (
+        <Card className="border-primary">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Crown className="h-8 w-8 text-primary" />
+                <div>
+                  <h3 className="font-bold text-lg">Premium Active</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Valid until {new Date(profile.premium_expires_at!).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <Badge variant="default">Active</Badge>
+            </div>
+          </CardContent>
+        </Card>
       )}
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Free</CardTitle>
+            <CardDescription>Perfect for casual players</CardDescription>
+            <div className="text-3xl font-bold">R0</div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <span>250 starting credits</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <span>Daily free credits when balance is zero</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <span>Access to public games</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <span>Basic achievements</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card className="border-primary relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <Badge variant="default">Popular</Badge>
+          </div>
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <Crown className="h-6 w-6" />
+              Premium
+            </CardTitle>
+            <CardDescription>For serious competitors</CardDescription>
+            <div className="text-3xl font-bold">R99/month</div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-primary mt-0.5" />
+                <span className="font-medium">All Free features</span>
+              </li>
+              {features.map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <span className="font-medium">{feature.title}</span>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={handleSubscribe}
+              disabled={isPremium}
+            >
+              {isPremium ? 'Active' : 'Subscribe Now'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Coming Soon: Live Streaming</CardTitle>
+          <CardDescription>
+            Premium members will get exclusive access to live streaming features
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Watch top players compete in real-time, learn from the best, and participate in
+            live tournaments. This feature is currently in development and will be available
+            exclusively to Premium members.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Streaming;
+}
