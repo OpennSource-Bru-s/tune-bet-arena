@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,28 +18,31 @@ type CryptoOption = {
   walletAddress: string;
 };
 
-const cryptoOptions: CryptoOption[] = [
-  { name: 'Bitcoin', symbol: 'BTC', walletAddress: '1KEyEudQkABGBzJmpdNtdMVEuJrDjEsjGx' },
-  { name: 'Ethereum', symbol: 'ETH', walletAddress: '0xd009C5a32d79e455E1D10a9ED1AB2043467d84BA' },
-  { name: 'USDT (TRC20)', symbol: 'USDT', walletAddress: 'TUvAoEswzR3s4FaTPzxHKomQGEQHBHESmA' },
-];
-
-const tokenPackages = [
-  { amount: 100, price: 9.99, id: 'pkg_100tokens', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
-  { amount: 500, price: 39.99, id: 'pkg_500tokens', popular: true, yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
-  { amount: 1000, price: 69.99, id: 'pkg_1000tokens', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
-  { amount: 5000, price: 249.99, id: 'pkg_5000tokens', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
-];
-
 export default function Store() {
   const { user, profile, refreshProfile } = useAuth();
+  const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState<'tokens' | 'nfts' | 'season'>('tokens');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('yoco');
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<typeof tokenPackages[0] | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<{ amount: number; price: number; id: string } | null>(null);
   const [nfts, setNfts] = useState<any[]>([]);
   const [ownedNfts, setOwnedNfts] = useState<Set<string>>(new Set());
   const [seasonPasses, setSeasonPasses] = useState<any[]>([]);
+
+  // Dynamic token packages from settings
+  const tokenPackages = [
+    { amount: settings.token_package_1_amount, price: settings.token_package_1_price, id: 'pkg_1', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
+    { amount: settings.token_package_2_amount, price: settings.token_package_2_price, id: 'pkg_2', popular: true, yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
+    { amount: settings.token_package_3_amount, price: settings.token_package_3_price, id: 'pkg_3', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
+    { amount: settings.token_package_4_amount, price: settings.token_package_4_price, id: 'pkg_4', yocoLink: 'https://pay.yoco.com/r/mRAe8r' },
+  ];
+
+  // Dynamic crypto wallets from settings
+  const cryptoOptions: CryptoOption[] = [
+    { name: 'Bitcoin', symbol: 'BTC', walletAddress: settings.btc_wallet },
+    { name: 'Ethereum', symbol: 'ETH', walletAddress: settings.eth_wallet },
+    { name: 'USDT (TRC20)', symbol: 'USDT', walletAddress: settings.usdt_wallet },
+  ].filter(c => c.walletAddress);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -273,6 +277,7 @@ export default function Store() {
                   variant={paymentMethod === 'crypto' ? 'default' : 'outline'}
                   onClick={() => setPaymentMethod('crypto')}
                   className="flex-1"
+                  disabled={cryptoOptions.length === 0}
                 >
                   Cryptocurrency
                 </Button>
@@ -322,7 +327,7 @@ export default function Store() {
                   <div>
                     <h3 className="font-semibold mb-2">Free Tokens</h3>
                     <p className="text-sm text-muted-foreground">
-                      New players receive free tokens to start. Claim daily tokens when your balance hits zero.
+                      New players receive {settings.free_credits_amount} free tokens to start. Claim daily tokens when your balance hits zero.
                       Premium features require purchased tokens.
                     </p>
                   </div>

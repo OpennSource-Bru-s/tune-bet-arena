@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ interface Referral {
 
 export default function Referrals() {
   const { user, profile, refreshProfile } = useAuth();
+  const { settings } = useSettings();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [copied, setCopied] = useState(false);
   const referralLink = `${window.location.origin}/?ref=${profile?.referral_code}`;
@@ -64,7 +66,7 @@ export default function Referrals() {
 
       if (error) throw error;
 
-      toast.success('Claimed 250 credits!');
+      toast.success(`Claimed ${settings.referral_bonus} tokens!`);
       refreshProfile();
       fetchReferrals();
     } catch (error: any) {
@@ -80,7 +82,7 @@ export default function Referrals() {
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold">Refer Friends</h1>
         <p className="text-muted-foreground">
-          Invite friends and earn 250 credits for each successful referral!
+          Invite friends and earn {settings.referral_bonus} tokens for each successful referral!
         </p>
       </div>
 
@@ -102,7 +104,7 @@ export default function Referrals() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{unclaimedRewards}</div>
-            <p className="text-xs text-muted-foreground">{unclaimedRewards * 250} credits</p>
+            <p className="text-xs text-muted-foreground">{unclaimedRewards * settings.referral_bonus} tokens</p>
           </CardContent>
         </Card>
 
@@ -113,9 +115,9 @@ export default function Referrals() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {referrals.filter(r => r.reward_claimed).length * 250}
+              {referrals.filter(r => r.reward_claimed).length * settings.referral_bonus}
             </div>
-            <p className="text-xs text-muted-foreground">credits</p>
+            <p className="text-xs text-muted-foreground">tokens</p>
           </CardContent>
         </Card>
       </div>
@@ -124,7 +126,7 @@ export default function Referrals() {
         <CardHeader>
           <CardTitle>Your Referral Link</CardTitle>
           <CardDescription>
-            Share this link with friends. When they sign up and play their first game, you'll earn 250 credits!
+            Share this link with friends. When they sign up and play their first game, you'll earn {settings.referral_bonus} tokens!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -169,7 +171,7 @@ export default function Referrals() {
                   </div>
                   {!referral.reward_claimed ? (
                     <Button onClick={() => claimReward(referral.referred_id)}>
-                      Claim 250 Credits
+                      Claim {settings.referral_bonus} Tokens
                     </Button>
                   ) : (
                     <span className="text-sm text-muted-foreground">Claimed ✓</span>
