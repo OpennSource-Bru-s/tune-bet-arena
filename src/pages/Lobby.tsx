@@ -2,21 +2,27 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu, Users, BarChart3, Gift, Crown } from 'lucide-react';
+import { Coins, Trophy, User, LogOut, Settings, ShoppingCart, Shield, Compass, Mic2, Menu, Users, BarChart3, Gift, Crown, AlertTriangle } from 'lucide-react';
 
 const Lobby = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
+  const { settings } = useSettings();
   const [stakeAmount, setStakeAmount] = useState(50);
   const [activeGames, setActiveGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setStakeAmount(settings.minimum_stake);
+  }, [settings.minimum_stake]);
 
   useEffect(() => {
     loadActiveGames();
@@ -178,7 +184,13 @@ const Lobby = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
+      {settings.maintenance_mode && (
+        <div className="fixed top-0 left-0 right-0 bg-destructive text-destructive-foreground py-2 px-4 text-center z-50 flex items-center justify-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          Maintenance mode is active. Some features may be unavailable.
+        </div>
+      )}
+      <div className={`max-w-6xl mx-auto space-y-6 ${settings.maintenance_mode ? 'pt-10' : ''}`}>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Sheet>
@@ -289,7 +301,7 @@ const Lobby = () => {
             <CardHeader className="flex flex-row items-center space-y-0 space-x-3 pb-2">
               <Coins className="w-8 h-8 text-primary" />
               <div>
-                <CardDescription>Your Credits</CardDescription>
+                <CardDescription>Your Tokens</CardDescription>
                 <CardTitle className="text-3xl">{profile?.credits || 0}</CardTitle>
               </div>
             </CardHeader>
@@ -301,7 +313,7 @@ const Lobby = () => {
                   size="sm"
                 >
                   <Coins className="w-4 h-4 mr-2" />
-                  Claim 250 Free Credits
+                  Claim {settings.free_credits_amount} Free Tokens
                 </Button>
               </CardContent>
             )}
@@ -331,7 +343,7 @@ const Lobby = () => {
         <Card className="bg-card border-primary/20 shadow-card">
           <CardHeader>
             <CardTitle>Create New Game</CardTitle>
-            <CardDescription>Set your stake and challenge players</CardDescription>
+            <CardDescription>Set your stake and challenge players (Min: {settings.minimum_stake}, Max: {settings.max_stake})</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -340,18 +352,18 @@ const Lobby = () => {
                 id="stake"
                 type="number"
                 value={stakeAmount}
-                onChange={(e) => setStakeAmount(Number(e.target.value))}
-                min={10}
-                max={profile?.credits || 0}
+                onChange={(e) => setStakeAmount(Math.min(Math.max(Number(e.target.value), settings.minimum_stake), settings.max_stake))}
+                min={settings.minimum_stake}
+                max={Math.min(settings.max_stake, profile?.credits || 0)}
                 className="bg-input border-border"
               />
             </div>
             <Button 
               onClick={createGame} 
-              disabled={loading}
+              disabled={loading || settings.maintenance_mode}
               className="w-full bg-gradient-primary hover:opacity-90"
             >
-              {loading ? 'Creating...' : `Create Game (${stakeAmount} Credits)`}
+              {loading ? 'Creating...' : `Create Game (${stakeAmount} Tokens)`}
             </Button>
           </CardContent>
         </Card>
@@ -372,7 +384,7 @@ const Lobby = () => {
                     className="flex items-center justify-between p-4 bg-gradient-card border border-primary/20 rounded-lg"
                   >
                     <div>
-                      <p className="font-semibold">Stake: {game.stake_amount} credits</p>
+                      <p className="font-semibold">Stake: {game.stake_amount} tokens</p>
                       <p className="text-sm text-muted-foreground">
                         {game.game_participants?.length || 0}/2 players
                       </p>
@@ -387,7 +399,7 @@ const Lobby = () => {
                     ) : (
                       <Button
                         onClick={() => joinGame(game.id, game.stake_amount)}
-                        disabled={game.game_participants?.length >= 2}
+                        disabled={game.game_participants?.length >= 2 || settings.maintenance_mode}
                         className="bg-gradient-primary hover:opacity-90"
                       >
                         Join Game

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,10 +14,11 @@ import { useGameAnalytics } from '@/hooks/useGameAnalytics';
 const Game = () => {
   const { gameId } = useParams();
   const { user, refreshProfile } = useAuth();
+  const { settings } = useSettings();
   const [game, setGame] = useState<any>(null);
   const [song, setSong] = useState<any>(null);
   const [answer, setAnswer] = useState('');
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(settings.game_duration_seconds);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const reconnectAttempts = useRef(0);
@@ -24,6 +26,13 @@ const Game = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackGameEvent, updateGameAnalytics, updateUserStats } = useGameAnalytics();
+
+  // Update timer when settings load
+  useEffect(() => {
+    if (!hasAnswered && game?.status !== 'in_progress') {
+      setTimeLeft(settings.game_duration_seconds);
+    }
+  }, [settings.game_duration_seconds]);
 
   useEffect(() => {
     if (!gameId) return;
