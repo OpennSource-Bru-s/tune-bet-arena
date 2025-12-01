@@ -180,11 +180,10 @@ const Lobby = () => {
     <div className="min-h-screen bg-gradient-hero p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          {/* Mobile Menu */}
           <div className="flex items-center gap-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden">
+                <Button variant="outline" size="icon">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -219,6 +218,38 @@ const Lobby = () => {
                   </Button>
                   <Button 
                     variant="outline" 
+                    onClick={() => navigate('/tournaments')}
+                    className="justify-start"
+                  >
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Tournaments
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/statistics')}
+                    className="justify-start"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Stats
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/referrals')}
+                    className="justify-start"
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    Referrals
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/streaming')}
+                    className="justify-start"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Premium
+                  </Button>
+                  <Button 
+                    variant="outline" 
                     onClick={() => navigate('/store')}
                     className="justify-start"
                   >
@@ -250,52 +281,6 @@ const Lobby = () => {
             <h1 className="text-2xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Lyric Battle
             </h1>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
-              <Compass className="w-4 h-4 mr-2" />
-              Discover
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/streaming')}>
-              <Mic2 className="w-4 h-4 mr-2" />
-              Artists
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/social')}>
-              <Users className="w-4 h-4 mr-2" />
-              Social
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/tournaments')}>
-              <Trophy className="w-4 h-4 mr-2" />
-              Tournaments
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/statistics')}>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Stats
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/referrals')}>
-              <Gift className="w-4 h-4 mr-2" />
-              Referrals
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/streaming')}>
-              <Crown className="w-4 h-4 mr-2" />
-              Premium
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/store')}>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Store
-            </Button>
-            {isAdmin && (
-              <Button variant="outline" onClick={() => navigate('/admin')}>
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Portal
-              </Button>
-            )}
-            <Button variant="outline" onClick={signOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
           </div>
         </div>
 
