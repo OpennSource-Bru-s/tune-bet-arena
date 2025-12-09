@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface AppSettings {
   // Game settings
   game_duration_seconds: number;
+  game_rake_percentage: number;
   minimum_stake: number;
   max_stake: number;
   
@@ -45,6 +46,7 @@ interface SettingsContextType {
 
 const defaultSettings: AppSettings = {
   game_duration_seconds: 30,
+  game_rake_percentage: 5,
   minimum_stake: 50,
   max_stake: 10000,
   free_credits_amount: 250,
@@ -88,6 +90,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
         setSettings({
           game_duration_seconds: parseInt(settingsMap.game_duration_seconds) || defaultSettings.game_duration_seconds,
+          game_rake_percentage: parseFloat(settingsMap.game_rake_percentage) || defaultSettings.game_rake_percentage,
           minimum_stake: parseInt(settingsMap.minimum_stake) || defaultSettings.minimum_stake,
           max_stake: parseInt(settingsMap.max_stake) || defaultSettings.max_stake,
           free_credits_amount: parseInt(settingsMap.free_credits_amount) || defaultSettings.free_credits_amount,
