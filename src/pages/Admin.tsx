@@ -198,6 +198,21 @@ const Admin = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Platform Fee / Rake (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    step="0.5"
+                    value={settings.game_rake_percentage || '5'}
+                    onChange={(e) => updateSetting('game_rake_percentage', e.target.value)}
+                    className="bg-input"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Percentage taken from winnings (0-50%)
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label>Minimum Stake</Label>
                   <Input
                     type="number"

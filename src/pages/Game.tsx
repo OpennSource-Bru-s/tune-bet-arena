@@ -228,10 +228,14 @@ const Game = () => {
     await refreshProfile();
     
     const isWinner = gameData.winner_id === user?.id;
+    const totalPot = gameData.stake_amount * 2;
+    const rakeAmount = Math.floor(totalPot * (settings.game_rake_percentage / 100));
+    const winnerPayout = totalPot - rakeAmount;
+    
     toast({
       title: isWinner ? "Victory!" : "Game Over",
       description: isWinner 
-        ? `You won ${gameData.stake_amount * 2} credits!` 
+        ? `You won ${winnerPayout} credits! (${settings.game_rake_percentage}% platform fee applied)` 
         : "Better luck next time!",
       variant: isWinner ? "default" : "destructive",
     });
@@ -270,6 +274,10 @@ const Game = () => {
 
   if (game.status === 'completed') {
     const isWinner = game.winner_id === user?.id;
+    const totalPot = game.stake_amount * 2;
+    const rakeAmount = Math.floor(totalPot * (settings.game_rake_percentage / 100));
+    const winnerPayout = totalPot - rakeAmount;
+    
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
         <Card className="max-w-md w-full bg-card border-primary/20 shadow-glow">
@@ -282,9 +290,14 @@ const Game = () => {
             <Trophy className={`w-24 h-24 mx-auto ${isWinner ? 'text-secondary' : 'text-muted-foreground'}`} />
             <p className="text-xl">
               {isWinner 
-                ? `You won ${game.stake_amount * 2} credits!`
+                ? `You won ${winnerPayout} credits!`
                 : 'Better luck next time!'}
             </p>
+            {isWinner && (
+              <p className="text-xs text-muted-foreground">
+                ({settings.game_rake_percentage}% platform fee: {rakeAmount} credits)
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
               Correct answer: <span className="text-foreground font-semibold">{song?.answer}</span>
             </p>
@@ -297,6 +310,10 @@ const Game = () => {
     );
   }
 
+  const totalPot = game.stake_amount * 2;
+  const rakeAmount = Math.floor(totalPot * (settings.game_rake_percentage / 100));
+  const potentialWinnings = totalPot - rakeAmount;
+
   return (
     <div className="min-h-screen bg-gradient-hero p-4">
       <div className="max-w-6xl mx-auto grid gap-4 lg:grid-cols-3">
@@ -305,9 +322,15 @@ const Game = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-2xl">Guess the Lyrics!</CardTitle>
-                <div className="flex items-center gap-2 text-accent">
-                  <Timer className="w-5 h-5" />
-                  <span className="text-2xl font-bold">{timeLeft}s</span>
+                <div className="flex items-center gap-4">
+                  <div className="text-xs text-muted-foreground text-right">
+                    <span className="block">Win: {potentialWinnings} credits</span>
+                    <span className="block">({settings.game_rake_percentage}% fee)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-accent">
+                    <Timer className="w-5 h-5" />
+                    <span className="text-2xl font-bold">{timeLeft}s</span>
+                  </div>
                 </div>
               </div>
             </CardHeader>
