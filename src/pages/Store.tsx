@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Coins, Hexagon, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Coins, Hexagon, Sparkles, ArrowDownToLine } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -21,7 +23,10 @@ type CryptoOption = {
 export default function Store() {
   const { user, profile, refreshProfile } = useAuth();
   const { settings } = useSettings();
-  const [activeTab, setActiveTab] = useState<'tokens' | 'nfts' | 'season'>('tokens');
+  const [activeTab, setActiveTab] = useState<'tokens' | 'nfts' | 'season' | 'withdraw'>('tokens');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawWallet, setWithdrawWallet] = useState('');
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('yoco');
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<{ amount: number; price: number; id: string } | null>(null);
@@ -257,6 +262,14 @@ export default function Store() {
             <Sparkles className="h-4 w-4" />
             Season Pass
           </Button>
+          <Button
+            variant={activeTab === 'withdraw' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('withdraw')}
+            className="gap-2"
+          >
+            <ArrowDownToLine className="h-4 w-4" />
+            Withdraw
+          </Button>
         </div>
 
         {activeTab === 'tokens' && (
@@ -444,7 +457,138 @@ export default function Store() {
             )}
           </div>
         )}
+
+        {activeTab === 'withdraw' && (
+          <div className="max-w-md mx-auto">
+            <Card className="bg-gradient-to-br from-primary/5 to-purple-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowDownToLine className="h-5 w-5 text-primary" />
+                  Withdraw Tokens
+                </CardTitle>
+                <CardDescription>
+                  Convert your tokens back to ZAR. Minimum withdrawal: R{settings.min_withdrawal}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-background/50 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground">Available Balance</p>
+                  <p className="text-3xl font-bold text-primary">{profile?.credits || 0} Tokens</p>
+                  <p className="text-sm text-muted-foreground">≈ R{profile?.credits || 0}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="withdrawAmount">Amount (Tokens)</Label>
+                  <Input
+                    id="withdrawAmount"
+                    type="number"
+                    placeholder={`Min: ${settings.min_withdrawal}`}
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="withdrawWallet">Crypto Wallet Address</Label>
+                  <Input
+                    id="withdrawWallet"
+                    placeholder="Enter your wallet address"
+                    value={withdrawWallet}
+                    onChange={(e) => setWithdrawWallet(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    We support BTC, ETH, and USDT (TRC20) withdrawals
+                  </p>
+                </div>
+
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    const amount = parseInt(withdrawAmount);
+                    if (!amount || amount < settings.min_withdrawal) {
+                      toast.error(`Minimum withdrawal is R${settings.min_withdrawal}`);
+                      return;
+                    }
+                    if (amount > (profile?.credits || 0)) {
+                      toast.error('Insufficient balance');
+                      return;
+                    }
+                    if (!withdrawWallet.trim()) {
+                      toast.error('Please enter your wallet address');
+                      return;
+                    }
+                    setShowWithdrawConfirm(true);
+                  }}
+                  disabled={!profile || (profile.credits || 0) < settings.min_withdrawal}
+                >
+                  Request Withdrawal
+                </Button>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  Withdrawals are processed within 24-48 hours
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      <Dialog open={showWithdrawConfirm} onOpenChange={setShowWithdrawConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Withdrawal</DialogTitle>
+            <DialogDescription>
+              You are about to withdraw {withdrawAmount} tokens (≈ R{withdrawAmount}) to:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-muted rounded-lg font-mono text-sm break-all">
+              {withdrawWallet}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowWithdrawConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={async () => {
+                  const amount = parseInt(withdrawAmount);
+                  try {
+                    // Deduct tokens
+                    const { error: deductError } = await supabase.rpc('deduct_stake', {
+                      p_user_id: user!.id,
+                      p_amount: amount
+                    });
+                    if (deductError) throw deductError;
+
+                    // Record transaction
+                    await supabase.from('transactions').insert({
+                      user_id: user!.id,
+                      amount: -amount,
+                      type: 'purchase',
+                      description: `Withdrawal request to ${withdrawWallet.slice(0, 10)}...`
+                    });
+
+                    toast.success('Withdrawal request submitted! Processing within 24-48 hours.');
+                    setWithdrawAmount('');
+                    setWithdrawWallet('');
+                    setShowWithdrawConfirm(false);
+                    refreshProfile();
+                  } catch (error: any) {
+                    toast.error(error.message || 'Withdrawal failed');
+                  }
+                }}
+              >
+                Confirm Withdrawal
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showCryptoDialog} onOpenChange={setShowCryptoDialog}>
         <DialogContent>

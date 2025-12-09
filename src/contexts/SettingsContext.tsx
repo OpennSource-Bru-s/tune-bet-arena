@@ -32,6 +32,9 @@ interface AppSettings {
   
   // System
   maintenance_mode: boolean;
+  
+  // Withdrawals
+  min_withdrawal: number;
 }
 
 interface SettingsContextType {
@@ -60,6 +63,7 @@ const defaultSettings: AppSettings = {
   eth_wallet: '',
   usdt_wallet: '',
   maintenance_mode: false,
+  min_withdrawal: 50,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -102,6 +106,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           eth_wallet: settingsMap.eth_wallet || defaultSettings.eth_wallet,
           usdt_wallet: settingsMap.usdt_wallet || defaultSettings.usdt_wallet,
           maintenance_mode: settingsMap.maintenance_mode === 'true',
+          min_withdrawal: parseInt(settingsMap.min_withdrawal) || defaultSettings.min_withdrawal,
         });
       }
     } catch (error) {

@@ -363,6 +363,27 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Withdrawal Settings */}
+            <Card className="bg-card border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="w-5 h-5" />
+                  Withdrawal Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Minimum Withdrawal (ZAR)</Label>
+                  <Input
+                    type="number"
+                    value={settings.min_withdrawal || '50'}
+                    onChange={(e) => updateSetting('min_withdrawal', e.target.value)}
+                    className="bg-input"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="songs" className="space-y-4">
